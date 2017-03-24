@@ -7,10 +7,17 @@ package codigo;
 
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.net.URL;
+import javax.swing.ImageIcon;
+import javax.swing.JPanel;
 import javax.swing.Timer;
 
 /**
@@ -19,10 +26,28 @@ import javax.swing.Timer;
  */
 public class VentanaJuego extends javax.swing.JFrame {
     
-
-    static int ANCHOPANTALLA = 800;
-    static int ALTOPANTALLA = 750;
+    int puntuacion = 0;
     
+    int i =0;
+    
+    Image fondo;
+    
+    boolean gameOver = false;
+    
+    Pajaro pajaro = new Pajaro(40, Color.WHITE);
+    
+    
+    static int ANCHOPANTALLA = 400;
+    static int ALTOPANTALLA = 750;
+    static int SEPARACION_COLUMNAS = 230;
+    
+    Suelo suelo = new Suelo(ANCHOPANTALLA, ALTOPANTALLA *0.725);
+    Suelo suelo2 = new Suelo(ANCHOPANTALLA, ALTOPANTALLA *0.725);
+    
+    Columna columna = new Columna(ANCHOPANTALLA-100, ANCHOPANTALLA);
+    Columna columna2 = new Columna(ANCHOPANTALLA-100 + SEPARACION_COLUMNAS, ANCHOPANTALLA);
+        
+        
     BufferedImage buffer = null;
     Graphics2D bufferGraphics, lienzoGraphics = null;
     
@@ -31,6 +56,9 @@ public class VentanaJuego extends javax.swing.JFrame {
     Timer temporizador = new Timer(10,new ActionListener(){
         @Override
         public void actionPerformed(ActionEvent e){
+            if(gameOver){
+               temporizador.stop(); 
+            }
             bucleDelJuego();
         }
     });
@@ -40,15 +68,70 @@ public class VentanaJuego extends javax.swing.JFrame {
      */
     public VentanaJuego() {
         initComponents();
-
+        inicializaBuffers();
+        temporizador.start();
+        jLabel2.setVisible(false);
     }
     
     private void inicializaBuffers(){
+        
+        lienzoGraphics = (Graphics2D) jPanel1.getGraphics();
+        buffer = (BufferedImage) jPanel1.createImage(ANCHOPANTALLA, ALTOPANTALLA);
+        bufferGraphics = buffer.createGraphics();
+        
+        
+        //bufferGraphics.drawImage(background);
+        //bufferGraphics.setColor(Color.BLACK);
+        bufferGraphics.fillRect(0,0, ANCHOPANTALLA, ALTOPANTALLA);
 
     }
     
     private void bucleDelJuego(){
-
+        
+        if(pajaro.chequeaColision(columna)||pajaro.chequeaColision(columna2)/*||pajaro.chequeaColision(columna3)*/){
+            temporizador.stop();
+        }
+        
+        //Image background = Toolkit.getDefaultToolkit().createImage("19.jpg");
+        //siguientes dos lineas limpian la pantalla
+        bufferGraphics.setColor(Color.CYAN);
+        bufferGraphics.fillRect(0,0, ANCHOPANTALLA, ALTOPANTALLA);
+        //dibujo el pajaro
+        pajaro.mueve(bufferGraphics);
+        columna.mueve(bufferGraphics);
+        columna2.mueve(bufferGraphics);
+        //columna3.mueve(bufferGraphics);
+        
+        suelo.mueve(bufferGraphics);
+        suelo2.mueve(bufferGraphics);
+        
+        if(pajaro.getX()>=columna.base.getX()+columna.base.getWidth()){
+            puntuacion+=1;
+        }
+                
+        bufferGraphics.setFont(new Font("Courier New", Font.BOLD, 90));
+        bufferGraphics.setColor(Color.WHITE);
+        bufferGraphics.drawString(" " + puntuacion, 95, 150);
+        lienzoGraphics.drawImage(buffer, 0, 0, this);
+        
+        precargaImagenes();
+        //buffer.drawImage(fondo, 0, 0, null);
+        /*URL imagen0 = getClass().getResource("/imagenes/19.jpg");
+        ImageIcon fondo = new ImageIcon(new ImageIcon(imagen0).getImage().getScaledInstance(jLabel1.getWidth(), jLabel1.getHeight(), Image.SCALE_DEFAULT));
+        jLabel1.setIcon(fondo);*/
+        
+                
+        /*Image background = Toolkit.getDefaultToolkit().createImage("19.jpg");
+        lienzoGraphics = (Graphics2D) jPanel1.getGraphics();
+        jPanel1.drawImage(background, 0, 0, null);*/
+        
+        
+    }
+    
+    private void precargaImagenes(){
+         
+        fondo = (new ImageIcon(new ImageIcon(getClass().getResource("/imagenes/19.jpg")).
+               getImage().getScaledInstance(79, 500, Image.SCALE_DEFAULT))).getImage();
     }
     
     /**
@@ -61,6 +144,8 @@ public class VentanaJuego extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addKeyListener(new java.awt.event.KeyAdapter() {
@@ -69,33 +154,49 @@ public class VentanaJuego extends javax.swing.JFrame {
             }
         });
 
+        jPanel1.setOpaque(false);
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 635, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(96, 96, 96)
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(102, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 602, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(128, 128, 128)
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 244, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(230, Short.MAX_VALUE))
         );
+
+        jLabel1.setOpaque(true);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 602, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    
     private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
-        
+        if(evt.getKeyCode() == KeyEvent.VK_SPACE)
+                pajaro.yVelocidad =4.25;
     }//GEN-LAST:event_formKeyPressed
 
     /**
@@ -134,6 +235,8 @@ public class VentanaJuego extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 }
